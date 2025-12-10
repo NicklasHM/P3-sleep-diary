@@ -338,6 +338,46 @@
   margin-top: 24px;
 }
 
+.confirmation-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.confirmation-dialog {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 460px;
+  box-shadow: 0 10px 30px var(--shadow-strong);
+  color: var(--text-primary);
+}
+
+.confirmation-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.confirmation-message {
+  margin: 0 0 18px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .option-edit-section {
   margin-bottom: 16px;
   padding: 12px;

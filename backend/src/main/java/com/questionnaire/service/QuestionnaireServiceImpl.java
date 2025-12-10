@@ -16,28 +16,27 @@ import java.util.Optional;
 @Service
 public class QuestionnaireServiceImpl implements IQuestionnaireService {
 
-    @Autowired
-    private QuestionnaireRepository questionnaireRepository;
+    private final QuestionnaireRepository questionnaireRepository;
+    private final QuestionRepository questionRepository;
+    private final IQuestionService questionService;
 
     @Autowired
-    private QuestionRepository questionRepository;
+    public QuestionnaireServiceImpl(QuestionnaireRepository questionnaireRepository,
+                                   QuestionRepository questionRepository,
+                                   IQuestionService questionService) {
+        this.questionnaireRepository = questionnaireRepository;
+        this.questionRepository = questionRepository;
+        this.questionService = questionService;
+    }
 
     public Questionnaire getQuestionnaireByType(QuestionnaireType type) {
         return questionnaireRepository.findByType(type)
-                .orElseGet(() -> {
-                    // Opret spørgeskema hvis det ikke findes
-                    String name = type == QuestionnaireType.morning ? "Morgenskema" : "Aftenskema";
-                    Questionnaire questionnaire = new Questionnaire(type, name);
-                    return questionnaireRepository.save(questionnaire);
-                });
+                .orElseThrow(() -> new RuntimeException("Questionnaire mangler: " + type));
     }
 
     public List<Question> getQuestionsByQuestionnaireId(String questionnaireId) {
         return questionRepository.findByQuestionnaireIdOrderByOrderAsc(questionnaireId);
     }
-
-    @Autowired
-    private IQuestionService questionService;
 
     public List<Question> getQuestionsByQuestionnaireId(String questionnaireId, String language) {
         List<Question> questions = getQuestionsByQuestionnaireId(questionnaireId);
@@ -60,6 +59,8 @@ public class QuestionnaireServiceImpl implements IQuestionnaireService {
         return questionnaireRepository.findById(id);
     }
 }
+
+
 
 
 

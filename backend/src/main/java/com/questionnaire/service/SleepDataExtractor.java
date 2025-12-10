@@ -50,8 +50,8 @@ public class SleepDataExtractor {
             logger.debug("Faldt i søvn efter: {}", time);
         });
         
-        // Order 8: Vågen i minutter (WASO)
-        orderHandlers.put(QuestionnaireConstants.ORDER_8, (data, answer) -> {
+        // Order 602: Vågen i minutter (WASO)
+        orderHandlers.put(QuestionnaireConstants.ORDER_602, (data, answer) -> {
             try {
                 double waso = Double.parseDouble(answer.toString());
                 data.setWASO(waso);
@@ -62,15 +62,15 @@ public class SleepDataExtractor {
             }
         });
         
-        // Order 9: Vågnede klokken
-        orderHandlers.put(QuestionnaireConstants.ORDER_9, (data, answer) -> {
+        // Order 7: Vågnede klokken
+        orderHandlers.put(QuestionnaireConstants.ORDER_7, (data, answer) -> {
             String time = answer.toString().trim();
             data.setWokeUpTime(time);
             logger.debug("Vågnede klokken: {}", time);
         });
         
-        // Order 10: Stod op klokken
-        orderHandlers.put(QuestionnaireConstants.ORDER_10, (data, answer) -> {
+        // Order 8: Stod op klokken
+        orderHandlers.put(QuestionnaireConstants.ORDER_8, (data, answer) -> {
             String time = answer.toString().trim();
             data.setGotUpTime(time);
             logger.debug("Stod op klokken: {}", time);

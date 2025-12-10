@@ -11,17 +11,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class ValidatorFactory {
     
-    @Autowired
-    private TextAnswerValidator textValidator;
+    private final TextAnswerValidator textValidator;
+    private final NumericAnswerValidator numericValidator;
+    private final TimeAnswerValidator timeValidator;
+    private final MultipleChoiceAnswerValidator multipleChoiceValidator;
     
     @Autowired
-    private NumericAnswerValidator numericValidator;
-    
-    @Autowired
-    private TimeAnswerValidator timeValidator;
-    
-    @Autowired
-    private MultipleChoiceAnswerValidator multipleChoiceValidator;
+    public ValidatorFactory(TextAnswerValidator textValidator,
+                           NumericAnswerValidator numericValidator,
+                           TimeAnswerValidator timeValidator,
+                           MultipleChoiceAnswerValidator multipleChoiceValidator) {
+        this.textValidator = textValidator;
+        this.numericValidator = numericValidator;
+        this.timeValidator = timeValidator;
+        this.multipleChoiceValidator = multipleChoiceValidator;
+    }
     
     /**
      * Returnerer korrekt validator baseret på question type
@@ -44,6 +48,8 @@ public class ValidatorFactory {
         }
     }
 }
+
+
 
 
 

@@ -2,29 +2,34 @@
 
 This document describes the test structure for the Questionnaire Platform project.
 
-## Test Structure
+## Test Struktur
 
-Tests are organized into three categories:
+Tests er organiseret i tre kategorier:
 
 ```
 src/test/java/com/questionnaire/
-├── unit/                          # Unit tests (isolated tests)
+├── unit/                          # Unit tests (isoleret, mocked dependencies)
 │   ├── utils/
-│   │   └── AnswerParserTest.java
-│   └── service/
-│       └── SleepDataExtractorTest.java
+│   │   ├── AnswerParserTest.java
+│   │   └── QuestionOrderUtilTest.java
+│   ├── service/
+│   │   ├── SleepDataExtractorTest.java
+│   │   ├── QuestionServiceImplTest.java
+│   │   ├── QuestionnaireServiceImplTest.java
+│   │   └── ResponseServiceImplTest.java
+│   └── strategy/
+│       └── DefaultConditionalLogicTest.java
 │
-├── integration/                   # Integration tests
-│   ├── strategy/
-│   │   ├── ConditionalLogicFactoryIntegrationTest.java
-│   │   └── ConditionalLogicStrategyIntegrationTest.java
-│   ├── validation/
-│   │   ├── QuestionnaireValidatorIntegrationTest.java
-│   │   └── TemplateMethodPatternIntegrationTest.java
-│   └── flow/
-│       └── ResponseFlowIntegrationTest.java
+├── integration/                   # Smalle integrationstests (max 2–3 beans)
+│   ├── flow/
+│   │   └── ResponseServiceIntegrationTest.java   # Response flow test
+│   ├── response/
+│   │   └── ResponseServiceIntegrationTest.java   # ResponseService med mocked deps
+│   └── validation/
+│       ├── QuestionnaireValidatorIntegrationTest.java    # UnifiedQuestionnaireValidator med mock repo
+│       └── TemplateMethodPatternIntegrationTest.java
 │
-└── system/                        # System test
+└── system/                        # System/E2E test
     └── QuestionnaireSystemTest.java
 ```
 
@@ -32,133 +37,125 @@ src/test/java/com/questionnaire/
 
 ### 1. Unit Tests (`unit/`)
 
-**Purpose:** Test isolated classes and methods without dependencies.
+**Formål:** Test isolerede klasser og metoder uden dependencies.
 
-**Examples:**
-- `AnswerParserTest` - Tests parsing of different data types
-- `SleepDataExtractorTest` - Tests extraction of sleep data
+**Eksempler:**
+- `AnswerParserTest` - Tester parsing af forskellige datatyper
+- `SleepDataExtractorTest` - Tester ekstraktion af søvndata
+- `QuestionServiceImplTest` - Tester QuestionService logik
+- `QuestionnaireServiceImplTest` - Tester QuestionnaireService logik
+- `ResponseServiceImplTest` - Tester ResponseService logik
+- `QuestionOrderUtilTest` - Tester spørgsmålsordning utility
+- `DefaultConditionalLogicTest` - Tester betinget logik strategi
 
-**Run tests:**
+**Kør tests:**
 ```bash
 mvn test -Dtest=AnswerParserTest
 mvn test -Dtest=SleepDataExtractorTest
+mvn test -Dtest=*UnitTest  # Kør alle unit tests
 ```
 
-### 2. Integration Tests (`integration/`) - MAIN FOCUS
+### 2. Integration Tests (`integration/`) – smalle slices
 
-**Purpose:** Test how OOP principles work together in practice.
+**Krav:** Max ~2–3 metoder/beans involveret. Resten stubbes/mockes.
 
-#### Strategy Pattern Tests
-- `ConditionalLogicFactoryIntegrationTest` - Tests Factory Pattern that returns Strategy implementations
-- `ConditionalLogicStrategyIntegrationTest` - Tests Strategy Pattern in practice
+**Tests:**
+- `ResponseServiceIntegrationTest` (flow/) – ResponseService flow test; verifierer validate+save flow.
+- `ResponseServiceIntegrationTest` (response/) – ResponseService + mocks af afhængigheder.
+- `QuestionnaireValidatorIntegrationTest` – UnifiedQuestionnaireValidator med lille datasæt + mock repo.
+- `TemplateMethodPatternIntegrationTest` – Template Method flow (validator + repo).
 
-**OOP principles tested:**
-- **Strategy Pattern:** Different strategies implement the same interface
-- **Polymorphism:** Same interface, different behavior
-- **Factory Pattern:** Factory returns correct strategy based on type
-
-#### Factory + Template Method Pattern Tests
-- `QuestionnaireValidatorIntegrationTest` - Tests Factory Pattern + Inheritance
-- `TemplateMethodPatternIntegrationTest` - Tests Template Method Pattern
-
-**OOP principles tested:**
-- **Factory Pattern:** QuestionnaireValidatorFactory returns correct validator
-- **Template Method Pattern:** Base class defines algorithm structure, subclasses implement specific logic
-- **Inheritance:** MorningQuestionnaireValidator extends QuestionnaireValidator
-- **Polymorphism:** Different validators, same interface
-
-#### Response Flow Tests
-- `ResponseFlowIntegrationTest` - Tests entire flow from Service to Repository
-
-**OOP principles tested:**
-- Integration of all patterns: Strategy + Factory + Template Method
-- End-to-end flow through the application
-
-**Run tests:**
+**Kør tests:**
 ```bash
-# All integration tests
+# Alle integrationstests
 mvn test -Dtest=*IntegrationTest
 
-# Specific integration test
-mvn test -Dtest=ConditionalLogicFactoryIntegrationTest
+# Specifik test
+mvn test -Dtest=ResponseServiceIntegrationTest
+mvn test -Dtest=QuestionnaireValidatorIntegrationTest
 ```
 
-### 3. System Test (`system/`)
-
-**Purpose:** Test the application as a whole through API endpoints.
-
-**Examples:**
-- `QuestionnaireSystemTest` - Tests API endpoints end-to-end
-
-**Run tests:**
-```bash
-mvn test -Dtest=QuestionnaireSystemTest
-```
-
-## Run All Tests
+## Kør Alle Tests
 
 ```bash
-# Run all tests
+# Kør alle tests
 mvn test
 
-## OOP Principles Tested
+# Kør specifik kategori
+mvn test -Dtest=*UnitTest
+mvn test -Dtest=*IntegrationTest
+mvn test -Dtest=*SystemTest
+```
 
-### Strategy Pattern
-- **Where:** `ConditionalLogicFactory` + `ConditionalLogicStrategy` implementations
-- **Tests:** `ConditionalLogicFactoryIntegrationTest`, `ConditionalLogicStrategyIntegrationTest`
-- **Demonstrates:** Polymorphism - same interface, different behavior
+## OOP Principper Testet
 
 ### Factory Pattern
-- **Where:** `ConditionalLogicFactory`, `QuestionnaireValidatorFactory`, `ValidatorFactory`
-- **Tests:** `ConditionalLogicFactoryIntegrationTest`, `QuestionnaireValidatorIntegrationTest`
-- **Demonstrates:** Centralized object creation based on type
+- **Hvor:** `ValidatorFactory`
+- **Tests:** `QuestionnaireValidatorIntegrationTest`
+- **Demonstrerer:** Centraliseret oprettelse af AnswerValidator baseret på spørgsmålstype
 
 ### Template Method Pattern
-- **Where:** `QuestionnaireValidator` (abstract class) + subclasses
-- **Tests:** `TemplateMethodPatternIntegrationTest`
-- **Demonstrates:** Inheritance - base class defines algorithm, subclasses implement specific logic
-
-### Inheritance
-- **Where:** `MorningQuestionnaireValidator extends QuestionnaireValidator`
+- **Hvor:** `QuestionnaireValidator` (abstract) + `UnifiedQuestionnaireValidator`
 - **Tests:** `TemplateMethodPatternIntegrationTest`, `QuestionnaireValidatorIntegrationTest`
-- **Demonstrates:** Subclass extends base class functionality
+- **Demonstrerer:** Base klasse definerer algoritme; unified subclass leverer specifikke steps
+
+### Strategy Pattern
+- **Hvor:** `ConditionalLogicStrategy` + `DefaultConditionalLogic`
+- **Tests:** `DefaultConditionalLogicTest`
+- **Demonstrerer:** Interchangeable algoritmer for betinget logik
 
 ### Polymorphism
-- **Where:** All Strategy and Validator interfaces
-- **Tests:** All integration tests
-- **Demonstrates:** Same interface, different implementations
+- **Hvor:** Strategy/Validator interfaces
+- **Tests:** Alle integration tests
+- **Demonstrerer:** Samme interface, forskellige implementeringer; udvidbar
+
+### Inheritance
+- **Hvor:** `BaseEntity` base klasse, `Validatable` interface
+- **Tests:** Alle tests der bruger entities
+- **Demonstrerer:** Code reuse og konsistent struktur
 
 ## Test Best Practices
 
-1. **Use `@DisplayName`** for readable test names
-2. **Arrange-Act-Assert (AAA)** structure in all tests
-3. **One assertion per test** when possible
-4. **Test both happy path and edge cases**
-5. **Use `@BeforeEach`** for setup
-6. **Use `@ExtendWith(MockitoExtension.class)`** for Mockito tests
+1. **Brug `@DisplayName`** for læsbare test navne
+2. **Arrange-Act-Assert (AAA)** struktur i alle tests
+3. **Én assertion per test** når muligt
+4. **Test både happy path og edge cases**
+5. **Brug `@BeforeEach`** til setup
+6. **Brug `@ExtendWith(MockitoExtension.class)`** for Mockito tests
+7. **Isoler tests** - ingen dependencies mellem tests
+8. **Mock eksterne dependencies** i unit tests
+9. **Brug `@SpringBootTest`** for integration tests
+10. **Brug `MockMvc`** for system/E2E tests
 
 ## Test Coverage
 
-Tests focus on:
-- ✅ OOP principles (Strategy, Factory, Template Method, Inheritance, Polymorphism)
-- ✅ Integration between components
+Tests fokuserer på:
+- ✅ OOP principper (Strategy, Factory, Template Method, Inheritance, Polymorphism)
+- ✅ Integration mellem komponenter
 - ✅ End-to-end flows
-- ✅ Error handling
+- ✅ Fejlhåndtering
+- ✅ Validering af svar
+- ✅ Beregning af søvnparametre
+- ✅ Betinget logik
+- ✅ Spørgsmålsordning og flow
 
-## Test Isolation and Cleanup
+## Test Isolation og Cleanup
 
-Tests implement automatic cleanup to ensure test isolation:
+Tests implementerer automatisk cleanup for at sikre test isolation:
 
-- **ResponseFlowIntegrationTest**: Deletes all responses and test users after each test
-- **QuestionnaireSystemTest**: Deletes test users after each test
-- This ensures test data does not contaminate the production environment or appear in the UI
+- **ResponseServiceIntegrationTest**: Sletter alle responses og test brugere efter hver test
+- **QuestionnaireSystemTest**: Sletter test brugere efter hver test
+- Dette sikrer at test data ikke forurener produktionsmiljøet eller vises i UI'et
 
-**Important**: The test user (`testuser`) is automatically deleted after each test run, so it does not appear in the UI.
+**Vigtigt**: Test brugeren (`testuser`) slettes automatisk efter hver test kørsel, så den ikke vises i UI'et.
 
-## Notes
+## Noter
 
-- Integration tests require Spring Boot context (use `@SpringBootTest`)
-- System test requires MockMvc for API testing
-- Some tests may require database setup (MongoDB)
-- Tests can be adjusted based on actual database structure
-- **Test data cleanup**: All test data (responses and test users) is automatically deleted after tests
+- Integration tests kræver Spring Boot context (brug `@SpringBootTest`)
+- System test kræver MockMvc for API testning
+- Nogle tests kan kræve database setup (MongoDB)
+- Tests kan justeres baseret på faktisk database struktur
+- **Test data cleanup**: Alt test data (responses og test brugere) slettes automatisk efter tests
+- Tests bruger Mockito til mocking af dependencies
+- Tests følger AAA (Arrange-Act-Assert) pattern
+- Alle tests er isolerede og kan køres i vilkårlig rækkefølge

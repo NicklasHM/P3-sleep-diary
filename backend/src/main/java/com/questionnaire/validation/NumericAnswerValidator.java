@@ -20,34 +20,37 @@ public class NumericAnswerValidator implements AnswerValidator {
                 value = Double.parseDouble(answer.toString());
             }
         } catch (NumberFormatException e) {
-            throw new ValidationException("Ugyldig numerisk værdi for spørgsmål: " + question.getText());
+            throw new ValidationException("Ugyldig numerisk værdi for spørgsmål: " + question.getText() +
+                " / Invalid numeric value for question: " + question.getText());
         }
         
         // Tjek minimum værdi
         if (question.getMinValue() != null && value < question.getMinValue()) {
             throw new ValidationException(
-                String.format("Værdien for '%s' skal være mindst %d. Du indtastede: %.0f", 
-                    question.getText(), question.getMinValue(), value)
+                String.format("Værdien for '%s' skal være mindst %d. Du indtastede: %.0f / The value for '%s' must be at least %d. You entered: %.0f", 
+                    question.getText(), question.getMinValue(), value, question.getText(), question.getMinValue(), value)
             );
         }
         
         // Tjek maximum værdi
         if (question.getMaxValue() != null && value > question.getMaxValue()) {
             throw new ValidationException(
-                String.format("Værdien for '%s' må højst være %d. Du indtastede: %.0f", 
-                    question.getText(), question.getMaxValue(), value)
+                String.format("Værdien for '%s' må højst være %d. Du indtastede: %.0f / The value for '%s' must be at most %d. You entered: %.0f", 
+                    question.getText(), question.getMaxValue(), value, question.getText(), question.getMaxValue(), value)
             );
         }
         
         // Standard validering: ingen negative værdier (hvis ikke minValue er sat)
         if (question.getMinValue() == null && value < 0) {
             throw new ValidationException(
-                String.format("Værdien for '%s' kan ikke være negativ. Du indtastede: %.0f", 
-                    question.getText(), value)
+                String.format("Værdien for '%s' kan ikke være negativ. Du indtastede: %.0f / The value for '%s' cannot be negative. You entered: %.0f", 
+                    question.getText(), value, question.getText(), value)
             );
         }
     }
 }
+
+
 
 
 

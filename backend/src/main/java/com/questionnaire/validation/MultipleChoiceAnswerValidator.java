@@ -21,7 +21,7 @@ public class MultipleChoiceAnswerValidator implements AnswerValidator {
     public void validate(Question question, Object answer) throws ValidationException {
         // For multiple choice, tjek at svaret er en gyldig option ID
         if (question.getOptions() == null || question.getOptions().isEmpty()) {
-            throw new ValidationException("Spørgsmålet har ingen valgmuligheder");
+            throw new ValidationException("Spørgsmålet har ingen valgmuligheder / The question has no options");
         }
         
         // Håndter multiple_choice_multiple (array af valg)
@@ -40,7 +40,8 @@ public class MultipleChoiceAnswerValidator implements AnswerValidator {
         // Brug AnswerParser til at ekstrahere option ID (håndterer både string og Map)
         String answerId = AnswerParser.extractOptionId(answer);
         if (answerId == null || answerId.isEmpty()) {
-            throw new ValidationException("Ugyldig valgmulighed for spørgsmål: " + question.getText());
+            throw new ValidationException("Ugyldig valgmulighed for spørgsmål: " + question.getText() +
+                " / Invalid option for question: " + question.getText());
         }
         
         // Find og valider den valgte option
@@ -65,14 +66,16 @@ public class MultipleChoiceAnswerValidator implements AnswerValidator {
         }
         
         if (answerList.isEmpty()) {
-            throw new ValidationException("Mindst ét valg er påkrævet for spørgsmål: " + question.getText());
+            throw new ValidationException("Mindst ét valg er påkrævet for spørgsmål: " + question.getText() +
+                " / At least one choice is required for question: " + question.getText());
         }
         
         // Valider hvert valg i arrayet
         for (Object item : answerList) {
             String answerId = AnswerParser.extractOptionId(item);
             if (answerId == null || answerId.isEmpty()) {
-                throw new ValidationException("Ugyldig valgmulighed for spørgsmål: " + question.getText());
+                throw new ValidationException("Ugyldig valgmulighed for spørgsmål: " + question.getText() +
+                    " / Invalid option for question: " + question.getText());
             }
             
             // Find og valider option
@@ -93,7 +96,8 @@ public class MultipleChoiceAnswerValidator implements AnswerValidator {
             .orElse(null);
         
         if (selectedOption == null) {
-            throw new ValidationException("Ugyldig valgmulighed for spørgsmål: " + question.getText());
+            throw new ValidationException("Ugyldig valgmulighed for spørgsmål: " + question.getText() +
+                " / Invalid option for question: " + question.getText());
         }
         
         return selectedOption;
@@ -106,7 +110,8 @@ public class MultipleChoiceAnswerValidator implements AnswerValidator {
         if (Boolean.TRUE.equals(selectedOption.getIsOther())) {
             String customText = AnswerParser.extractCustomText(answer);
             if (customText == null || customText.trim().isEmpty()) {
-                throw new ValidationException("Custom tekst er påkrævet for 'Andet' option i spørgsmål: " + question.getText());
+                throw new ValidationException("Custom tekst er påkrævet for 'Andet' option i spørgsmål: " + question.getText() +
+                    " / Custom text is required for the 'Other' option in question: " + question.getText());
             }
         }
     }

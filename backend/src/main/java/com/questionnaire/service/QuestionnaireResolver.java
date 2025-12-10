@@ -20,11 +20,15 @@ import java.util.Optional;
 @Component
 public class QuestionnaireResolver {
     
+    private final IQuestionnaireService questionnaireService;
+    private final QuestionRepository questionRepository;
+
     @Autowired
-    private IQuestionnaireService questionnaireService;
-    
-    @Autowired
-    private QuestionRepository questionRepository;
+    public QuestionnaireResolver(IQuestionnaireService questionnaireService,
+                                 QuestionRepository questionRepository) {
+        this.questionnaireService = questionnaireService;
+        this.questionRepository = questionRepository;
+    }
     
     /**
      * Resolver questionnaire ID til faktisk ID og type
@@ -63,6 +67,8 @@ public class QuestionnaireResolver {
         return null;
     }
 }
+
+
 
 
 

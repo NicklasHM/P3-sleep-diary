@@ -40,6 +40,8 @@ public class QuestionBuilder {
                 new ArrayList<>(source.getConditionalChildren()) : null);
         builder.question.setMinValue(source.getMinValue());
         builder.question.setMaxValue(source.getMaxValue());
+        builder.question.setMinLength(source.getMinLength());
+        builder.question.setMaxLength(source.getMaxLength());
         builder.question.setMinTime(source.getMinTime());
         builder.question.setMaxTime(source.getMaxTime());
         builder.question.setHasColorCode(source.getHasColorCode());
@@ -124,6 +126,16 @@ public class QuestionBuilder {
     
     public QuestionBuilder maxValue(Integer maxValue) {
         question.setMaxValue(maxValue);
+        return this;
+    }
+
+    public QuestionBuilder minLength(Integer minLength) {
+        question.setMinLength(minLength);
+        return this;
+    }
+
+    public QuestionBuilder maxLength(Integer maxLength) {
+        question.setMaxLength(maxLength);
         return this;
     }
     

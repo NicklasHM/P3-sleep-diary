@@ -32,6 +32,8 @@ public class Question extends BaseEntity implements Validatable {
     // Validation fields
     private Integer minValue;  // For numeric og slider
     private Integer maxValue;  // For numeric og slider
+    private Integer minLength; // For text
+    private Integer maxLength; // For text
     private String minTime;    // For time_picker (format: "HH:mm")
     private String maxTime;    // For time_picker (format: "HH:mm")
     
@@ -169,6 +171,22 @@ public class Question extends BaseEntity implements Validatable {
         this.maxValue = maxValue;
     }
 
+    public Integer getMinLength() {
+        return minLength;
+    }
+
+    public void setMinLength(Integer minLength) {
+        this.minLength = minLength;
+    }
+
+    public Integer getMaxLength() {
+        return maxLength;
+    }
+
+    public void setMaxLength(Integer maxLength) {
+        this.maxLength = maxLength;
+    }
+
     public String getMinTime() {
         return minTime;
     }
@@ -303,6 +321,8 @@ public class Question extends BaseEntity implements Validatable {
         // Opdater valideringsfelter
         this.minValue = other.getMinValue();
         this.maxValue = other.getMaxValue();
+        this.minLength = other.getMinLength();
+        this.maxLength = other.getMaxLength();
         this.minTime = other.getMinTime();
         this.maxTime = other.getMaxTime();
         

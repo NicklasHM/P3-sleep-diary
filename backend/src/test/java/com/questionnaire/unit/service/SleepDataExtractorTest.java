@@ -1,6 +1,5 @@
 package com.questionnaire.unit.service;
 
-import com.questionnaire.constants.QuestionnaireConstants;
 import com.questionnaire.model.Question;
 import com.questionnaire.model.QuestionType;
 import com.questionnaire.service.SleepDataExtractor;
@@ -35,7 +34,7 @@ class SleepDataExtractorTest {
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_3);
+        question.setOrder(3);
         question.setType(QuestionType.time_picker);
         questions.add(question);
         
@@ -56,7 +55,7 @@ class SleepDataExtractorTest {
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_4);
+        question.setOrder(4);
         question.setType(QuestionType.time_picker);
         questions.add(question);
         
@@ -77,7 +76,7 @@ class SleepDataExtractorTest {
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_5);
+        question.setOrder(5);
         question.setType(QuestionType.numeric);
         questions.add(question);
         
@@ -92,13 +91,13 @@ class SleepDataExtractorTest {
     }
     
     @Test
-    @DisplayName("Skal udtrække WASO fra order 8 som double")
+    @DisplayName("Skal udtrække WASO fra order 602 som double")
     void testExtractWASO() {
         // Arrange
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_8);
+        question.setOrder(602);
         question.setType(QuestionType.numeric);
         questions.add(question);
         
@@ -119,7 +118,7 @@ class SleepDataExtractorTest {
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_8);
+        question.setOrder(602);
         question.setType(QuestionType.numeric);
         questions.add(question);
         
@@ -134,13 +133,13 @@ class SleepDataExtractorTest {
     }
     
     @Test
-    @DisplayName("Skal udtrække wokeUpTime fra order 9")
+    @DisplayName("Skal udtrække wokeUpTime fra order 7")
     void testExtractWokeUpTime() {
         // Arrange
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_9);
+        question.setOrder(7);  // Ændret fra 9 til 7
         question.setType(QuestionType.time_picker);
         questions.add(question);
         
@@ -155,13 +154,13 @@ class SleepDataExtractorTest {
     }
     
     @Test
-    @DisplayName("Skal udtrække gotUpTime fra order 10")
+    @DisplayName("Skal udtrække gotUpTime fra order 8")
     void testExtractGotUpTime() {
         // Arrange
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_10);
+        question.setOrder(8);  // Ændret fra 10 til 8
         question.setType(QuestionType.time_picker);
         questions.add(question);
         
@@ -182,7 +181,7 @@ class SleepDataExtractorTest {
         List<Question> questions = new ArrayList<>();
         Question question = new Question();
         question.setId("q1");
-        question.setOrder(QuestionnaireConstants.ORDER_3);
+        question.setOrder(3);
         question.setType(QuestionType.time_picker);
         questions.add(question);
         
@@ -203,37 +202,37 @@ class SleepDataExtractorTest {
         
         Question q3 = new Question();
         q3.setId("q3");
-        q3.setOrder(QuestionnaireConstants.ORDER_3);
+        q3.setOrder(3);
         q3.setType(QuestionType.time_picker);
         questions.add(q3);
         
         Question q4 = new Question();
         q4.setId("q4");
-        q4.setOrder(QuestionnaireConstants.ORDER_4);
+        q4.setOrder(4);
         q4.setType(QuestionType.time_picker);
         questions.add(q4);
         
         Question q5 = new Question();
         q5.setId("q5");
-        q5.setOrder(QuestionnaireConstants.ORDER_5);
+        q5.setOrder(5);
         q5.setType(QuestionType.numeric);
         questions.add(q5);
         
         Question q8 = new Question();
         q8.setId("q8");
-        q8.setOrder(QuestionnaireConstants.ORDER_8);
+        q8.setOrder(602);
         q8.setType(QuestionType.numeric);
         questions.add(q8);
         
         Question q9 = new Question();
         q9.setId("q9");
-        q9.setOrder(QuestionnaireConstants.ORDER_9);
+        q9.setOrder(7);  // Ændret fra 9 til 7
         q9.setType(QuestionType.time_picker);
         questions.add(q9);
         
         Question q10 = new Question();
         q10.setId("q10");
-        q10.setOrder(QuestionnaireConstants.ORDER_10);
+        q10.setOrder(8);  // Ændret fra 10 til 8
         q10.setType(QuestionType.time_picker);
         questions.add(q10);
         

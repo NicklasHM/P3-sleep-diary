@@ -28,8 +28,8 @@ public class TimeAnswerValidator implements AnswerValidator {
                 LocalTime minTime = LocalTime.parse(question.getMinTime(), TIME_FORMATTER);
                 if (time.isBefore(minTime)) {
                     throw new ValidationException(
-                        String.format("Tiden for '%s' skal være senest %s. Du indtastede: %s", 
-                            question.getText(), question.getMinTime(), timeString)
+                        String.format("Tiden for '%s' skal være senest %s. Du indtastede: %s / The time for '%s' must be at least %s. You entered: %s", 
+                            question.getText(), question.getMinTime(), timeString, question.getText(), question.getMinTime(), timeString)
                     );
                 }
             }
@@ -39,8 +39,8 @@ public class TimeAnswerValidator implements AnswerValidator {
                 LocalTime maxTime = LocalTime.parse(question.getMaxTime(), TIME_FORMATTER);
                 if (time.isAfter(maxTime)) {
                     throw new ValidationException(
-                        String.format("Tiden for '%s' må højst være %s. Du indtastede: %s", 
-                            question.getText(), question.getMaxTime(), timeString)
+                        String.format("Tiden for '%s' må højst være %s. Du indtastede: %s / The time for '%s' must be at most %s. You entered: %s", 
+                            question.getText(), question.getMaxTime(), timeString, question.getText(), question.getMaxTime(), timeString)
                     );
                 }
             }
@@ -48,10 +48,13 @@ public class TimeAnswerValidator implements AnswerValidator {
             if (e instanceof ValidationException) {
                 throw e;
             }
-            throw new ValidationException("Ugyldig tidsformat for spørgsmål: " + question.getText() + ". Forventet format: " + QuestionnaireConstants.TIME_FORMAT);
+            throw new ValidationException("Ugyldig tidsformat for spørgsmål: " + question.getText() + ". Forventet format: " + QuestionnaireConstants.TIME_FORMAT +
+                " / Invalid time format for question: " + question.getText() + ". Expected format: " + QuestionnaireConstants.TIME_FORMAT);
         }
     }
 }
+
+
 
 
 

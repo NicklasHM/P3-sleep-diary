@@ -1,13 +1,12 @@
 package com.questionnaire.validation;
 
-import com.questionnaire.constants.QuestionnaireConstants;
 import com.questionnaire.model.Question;
 import com.questionnaire.model.QuestionType;
 import com.questionnaire.repository.QuestionRepository;
 import com.questionnaire.service.QuestionFinder;
 import com.questionnaire.service.interfaces.IQuestionnaireService;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,16 +19,16 @@ public abstract class QuestionnaireValidator {
     protected final ValidatorFactory validatorFactory;
     protected final IQuestionnaireService questionnaireService;
     protected final QuestionFinder questionFinder;
-    
-    @Autowired
-    protected QuestionRepository questionRepository;
+    protected final QuestionRepository questionRepository;
     
     public QuestionnaireValidator(ValidatorFactory validatorFactory,
                                  IQuestionnaireService questionnaireService,
-                                 QuestionFinder questionFinder) {
+                                 QuestionFinder questionFinder,
+                                 QuestionRepository questionRepository) {
         this.validatorFactory = validatorFactory;
         this.questionnaireService = questionnaireService;
         this.questionFinder = questionFinder;
+        this.questionRepository = questionRepository;
     }
     
     /**
@@ -54,9 +53,11 @@ public abstract class QuestionnaireValidator {
      * Dette er fælles for alle questionnaire typer
      */
     protected void validateBasicAnswers(List<Question> questions, Map<String, Object> answers) {
+        Map<String, ConditionalParent> conditionalIndex = buildConditionalIndex(questions);
+
         for (Question question : questions) {
             // Tjek om dette spørgsmål er et conditional child der ikke skal vises
-            if (isConditionalChildThatShouldNotBeShown(question, questions, answers)) {
+            if (isConditionalChildThatShouldNotBeShown(question, conditionalIndex, answers)) {
                 continue; // Spring over conditional children der ikke skal vises
             }
             
@@ -66,14 +67,12 @@ public abstract class QuestionnaireValidator {
             // Brug polymorphism pattern - få korrekt validator baseret på question type
             AnswerValidator validator = validatorFactory.getValidator(question.getType());
             
-            // Valider text input (spørgsmål 2 i morgenskema: max 200 tegn)
-            if (question.getType() == QuestionType.text && question.getOrder() == QuestionnaireConstants.ORDER_2) {
-                validator.validate(question, answer);
-            } else if (question.getType() == QuestionType.numeric || question.getType() == QuestionType.slider || 
+            if (question.getType() == QuestionType.text || 
+                question.getType() == QuestionType.numeric || question.getType() == QuestionType.slider || 
                        question.getType() == QuestionType.time_picker || 
                        question.getType() == QuestionType.multiple_choice || 
                        question.getType() == QuestionType.multiple_choice_multiple) {
-                // Brug validator for alle andre typer
+                // Brug validator for alle typer vi understøtter
                 validator.validate(question, answer);
             }
         }
@@ -82,35 +81,47 @@ public abstract class QuestionnaireValidator {
     /**
      * Tjekker om et spørgsmål er et conditional child der ikke skal vises baseret på parent svar
      */
-    private boolean isConditionalChildThatShouldNotBeShown(Question question, List<Question> allQuestions, Map<String, Object> answers) {
-        // Find parent spørgsmål der har dette spørgsmål som conditional child
-        for (Question parentQuestion : allQuestions) {
-            if (parentQuestion.getConditionalChildren() != null) {
-                for (com.questionnaire.model.ConditionalChild cc : parentQuestion.getConditionalChildren()) {
-                    if (cc.getChildQuestionId() != null && cc.getChildQuestionId().equals(question.getId())) {
-                        // Dette er et conditional child - tjek om parent svar matcher
-                        Object parentAnswer = answers.get(parentQuestion.getId());
-                        if (parentAnswer == null) {
-                            // Parent er ikke besvaret, så conditional child skal ikke vises
-                            return true;
-                        }
-                        
-                        // Tjek om parent svar matcher optionId for conditional child
-                        String parentOptionId = com.questionnaire.utils.AnswerParser.extractOptionId(parentAnswer);
-                        if (parentOptionId == null || !parentOptionId.equals(cc.getOptionId())) {
-                            // Parent svar matcher ikke, så conditional child skal ikke vises
-                            return true;
-                        }
-                        
-                        // Parent svar matcher, så conditional child skal vises
-                        return false;
-                    }
+    private boolean isConditionalChildThatShouldNotBeShown(Question question, Map<String, ConditionalParent> conditionalIndex, Map<String, Object> answers) {
+        ConditionalParent parentInfo = conditionalIndex.get(question.getId());
+        if (parentInfo == null) {
+            return false; // Ikke et conditional child
+        }
+
+        Object parentAnswer = answers.get(parentInfo.parentQuestion.getId());
+        if (parentAnswer == null) {
+            return true; // Parent er ikke besvaret, så child skal ikke vises
+        }
+
+        String parentOptionId = com.questionnaire.utils.AnswerParser.extractOptionId(parentAnswer);
+        return parentOptionId == null || !parentOptionId.equals(parentInfo.optionId);
+    }
+
+    /**
+     * Bygger et opslag fra child-question-id til parent og optionId for O(1) opslag i validering.
+     */
+    private Map<String, ConditionalParent> buildConditionalIndex(List<Question> questions) {
+        Map<String, ConditionalParent> index = new HashMap<>();
+        for (Question parentQuestion : questions) {
+            if (parentQuestion.getConditionalChildren() == null) {
+                continue;
+            }
+            for (com.questionnaire.model.ConditionalChild cc : parentQuestion.getConditionalChildren()) {
+                if (cc.getChildQuestionId() != null) {
+                    index.put(cc.getChildQuestionId(), new ConditionalParent(parentQuestion, cc.getOptionId()));
                 }
             }
         }
-        
-        // Dette er ikke et conditional child
-        return false;
+        return index;
+    }
+
+    private static final class ConditionalParent {
+        private final Question parentQuestion;
+        private final String optionId;
+
+        private ConditionalParent(Question parentQuestion, String optionId) {
+            this.parentQuestion = parentQuestion;
+            this.optionId = optionId;
+        }
     }
     
     /**

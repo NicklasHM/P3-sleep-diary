@@ -15,6 +15,9 @@ public interface QuestionRepository extends MongoRepository<Question, String> {
     
     @Query("{ 'questionnaireId': ?0, 'deletedAt': null }")
     List<Question> findByQuestionnaireId(String questionnaireId);
+
+    @Query("{ 'questionnaireId': ?0, 'order': ?1, 'deletedAt': null }")
+    Optional<Question> findByQuestionnaireIdAndOrder(String questionnaireId, int order);
     
     // Find alle spørgsmål inkl. slettede (til visning af besvarelser)
     @Query("{ 'questionnaireId': ?0 }")

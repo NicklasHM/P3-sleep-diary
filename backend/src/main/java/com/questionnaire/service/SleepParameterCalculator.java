@@ -22,11 +22,15 @@ public class SleepParameterCalculator implements ISleepParameterCalculator {
     private static final Logger logger = LoggerFactory.getLogger(SleepParameterCalculator.class);
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(QuestionnaireConstants.TIME_FORMAT);
 
+    private final QuestionRepository questionRepository;
+    private final SleepDataExtractor sleepDataExtractor;
+
     @Autowired
-    private QuestionRepository questionRepository;
-    
-    @Autowired
-    private SleepDataExtractor sleepDataExtractor;
+    public SleepParameterCalculator(QuestionRepository questionRepository,
+                                    SleepDataExtractor sleepDataExtractor) {
+        this.questionRepository = questionRepository;
+        this.sleepDataExtractor = sleepDataExtractor;
+    }
 
     public SleepParameters calculate(Map<String, Object> answers, String questionnaireId) {
         // Hent alle spørgsmål for questionnaire sorteret efter order

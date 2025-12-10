@@ -16,8 +16,7 @@ import com.questionnaire.service.interfaces.IQuestionnaireService;
 import com.questionnaire.service.interfaces.IResponseService;
 import com.questionnaire.service.interfaces.IResponseValidationService;
 import com.questionnaire.service.interfaces.ISleepParameterCalculator;
-import com.questionnaire.strategy.ConditionalLogicFactory;
-import com.questionnaire.strategy.ConditionalLogicStrategy;
+import com.questionnaire.strategy.DefaultConditionalLogic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,29 +34,33 @@ public class ResponseServiceImpl implements IResponseService {
 
     private static final Logger logger = LoggerFactory.getLogger(ResponseServiceImpl.class);
 
-    @Autowired
-    private ResponseRepository responseRepository;
+    private final ResponseRepository responseRepository;
+    private final QuestionRepository questionRepository;
+    private final ISleepParameterCalculator sleepParameterCalculator;
+    private final IQuestionnaireService questionnaireService;
+    private final IQuestionService questionService;
+    private final IResponseValidationService responseValidationService;
+    private final DefaultConditionalLogic conditionalLogicStrategy;
+    private final QuestionnaireResolver questionnaireResolver;
 
     @Autowired
-    private QuestionRepository questionRepository;
-
-    @Autowired
-    private ISleepParameterCalculator sleepParameterCalculator;
-
-    @Autowired
-    private IQuestionnaireService questionnaireService;
-
-    @Autowired
-    private IQuestionService questionService;
-
-    @Autowired
-    private IResponseValidationService responseValidationService;
-    
-    @Autowired
-    private ConditionalLogicFactory conditionalLogicFactory;
-    
-    @Autowired
-    private QuestionnaireResolver questionnaireResolver;
+    public ResponseServiceImpl(ResponseRepository responseRepository,
+                              QuestionRepository questionRepository,
+                              ISleepParameterCalculator sleepParameterCalculator,
+                              IQuestionnaireService questionnaireService,
+                              IQuestionService questionService,
+                              IResponseValidationService responseValidationService,
+                              DefaultConditionalLogic conditionalLogicStrategy,
+                              QuestionnaireResolver questionnaireResolver) {
+        this.responseRepository = responseRepository;
+        this.questionRepository = questionRepository;
+        this.sleepParameterCalculator = sleepParameterCalculator;
+        this.questionnaireService = questionnaireService;
+        this.questionService = questionService;
+        this.responseValidationService = responseValidationService;
+        this.conditionalLogicStrategy = conditionalLogicStrategy;
+        this.questionnaireResolver = questionnaireResolver;
+    }
 
     public Response saveResponse(String userId, String questionnaireId, Map<String, Object> answers) {
         // Resolve questionnaire ID og type
@@ -172,28 +175,16 @@ public class ResponseServiceImpl implements IResponseService {
     }
 
     private Question evaluateConditionalLogic(Question question, Map<String, Object> answers, List<Question> allQuestions, String currentQuestionId) {
-        // Brug strategy pattern til at evaluere conditional logic
-        Questionnaire questionnaire = questionnaireService.findById(question.getQuestionnaireId()).orElse(null);
-        QuestionnaireType questionnaireType = questionnaire != null ? questionnaire.getType() : null;
-        
-        ConditionalLogicStrategy strategy = conditionalLogicFactory.getStrategy(questionnaireType);
-        return strategy.shouldShow(question, answers, allQuestions, currentQuestionId);
+        // Brug unified conditional logic strategy
+        return conditionalLogicStrategy.shouldShow(question, answers, allQuestions, currentQuestionId);
     }
 
     public List<Response> getResponsesByUserId(String userId) {
-        List<Response> responses = responseRepository.findByUserId(userId);
-        return enrichResponsesWithQuestionTexts(responses);
+        return responseRepository.findByUserId(userId);
     }
 
     public List<Response> getResponsesByUserIdAndQuestionnaireId(String userId, String questionnaireId) {
-        List<Response> responses = responseRepository.findByUserIdAndQuestionnaireId(userId, questionnaireId);
-        return enrichResponsesWithQuestionTexts(responses);
-    }
-    
-    private List<Response> enrichResponsesWithQuestionTexts(List<Response> responses) {
-        // Responses er allerede komplette, vi skal bare returnere dem
-        // Spørgsmålstekster håndteres i frontend ved at hente spørgsmålene
-        return responses;
+        return responseRepository.findByUserIdAndQuestionnaireId(userId, questionnaireId);
     }
 
     public SleepParameters calculateSleepParameters(String responseId) {
