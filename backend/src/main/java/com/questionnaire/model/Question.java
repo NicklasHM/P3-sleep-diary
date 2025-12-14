@@ -2,7 +2,6 @@ package com.questionnaire.model;
 
 import com.questionnaire.exception.QuestionLockedException;
 import com.questionnaire.exception.ValidationException;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,9 +9,6 @@ import java.util.List;
 
 @Document(collection = "questions")
 public class Question extends BaseEntity implements Validatable {
-    @Id
-    private String id;
-    
     private String questionnaireId;
     
     private String text; // For bagudkompatibilitet - brug textDa/textEn i stedet
@@ -63,14 +59,6 @@ public class Question extends BaseEntity implements Validatable {
     }
 
     // Getters and Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getQuestionnaireId() {
         return questionnaireId;
     }

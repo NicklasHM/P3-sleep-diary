@@ -47,3 +47,8 @@ const SliderInputField: React.FC<Props> = ({ question, value, onChange, error, t
 
 export default SliderInputField;
 
+
+
+
+
+

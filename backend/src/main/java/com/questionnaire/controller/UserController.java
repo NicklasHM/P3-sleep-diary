@@ -9,6 +9,7 @@ import com.questionnaire.service.interfaces.IResponseService;
 import com.questionnaire.service.interfaces.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
 public class UserController {
 
     @Autowired
@@ -27,6 +27,7 @@ public class UserController {
     private IUserService userService;
 
     @GetMapping
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers().stream()
                 .map(UserDto::fromUser)
@@ -35,6 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/citizens")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<List<UserDto>> getAllCitizens() {
         List<com.questionnaire.model.User> citizens = userService.getUsersByRole(UserRole.BORGER);
         List<UserDto> citizenDtos = citizens.stream()
@@ -54,6 +56,7 @@ public class UserController {
     }
 
     @GetMapping("/advisors")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<List<UserDto>> getAllAdvisors() {
         List<UserDto> advisors = userService.getUsersByRole(UserRole.RÅDGIVER).stream()
                 .map(UserDto::fromUser)
@@ -62,6 +65,7 @@ public class UserController {
     }
 
     @PutMapping("/{citizenId}/assign-advisor")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<UserDto> assignAdvisor(
             @PathVariable String citizenId,
             @RequestBody(required = false) Map<String, String> request) {
@@ -81,6 +85,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/sleep-data")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Map<String, Object>> getSleepData(@PathVariable String id) {
         List<Response> morningResponses = responseService.getResponsesByUserIdAndQuestionnaireType(id, QuestionnaireType.morning);
         

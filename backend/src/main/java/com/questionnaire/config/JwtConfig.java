@@ -78,7 +78,9 @@ public class JwtConfig {
         
         // Valider at secret er lang nok (mindst 32 tegn for 256 bits)
         if (secret.length() < 32) {
-            logger.warn("JWT_SECRET er for kort (mindst 32 tegn anbefales for sikkerhed). Nuværende længde: {}", secret.length());
+            throw new IllegalStateException(
+                String.format("JWT_SECRET er for kort (mindst 32 tegn påkrævet for sikkerhed). Nuværende længde: %d", secret.length())
+            );
         }
         
         return secret.trim();

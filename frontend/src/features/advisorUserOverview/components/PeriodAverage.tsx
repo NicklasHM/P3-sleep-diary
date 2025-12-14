@@ -88,3 +88,8 @@ const PeriodAverage: React.FC<PeriodAverageProps> = ({ t, sleepData }) => {
 
 export default PeriodAverage;
 
+
+
+
+
+

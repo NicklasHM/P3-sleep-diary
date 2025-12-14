@@ -75,7 +75,17 @@ public class SecurityConfig {
         }
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        
+        // Specificer kun de headers der faktisk bruges (sikkerhedsbestemt)
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Content-Type",
+            "Authorization",
+            "Accept"
+        ));
+        
+        // Tillad at browseren eksponerer Authorization header i responses (hvis nødvendigt)
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

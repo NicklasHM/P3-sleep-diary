@@ -1,5 +1,6 @@
 package com.questionnaire.model;
 
+import org.springframework.data.annotation.Id;
 import java.util.Date;
 import java.util.Objects;
 
@@ -7,6 +8,7 @@ import java.util.Objects;
  * Base entity class med fælles felter og metoder for alle entities
  */
 public abstract class BaseEntity {
+    @Id
     protected String id;
     protected Date createdAt;
     protected Date updatedAt;
@@ -69,6 +71,8 @@ public abstract class BaseEntity {
                 '}';
     }
 }
+
+
 
 
 

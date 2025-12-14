@@ -1,13 +1,26 @@
 package com.questionnaire.dto;
 
 import com.questionnaire.model.UserRole;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class RegisterRequest {
+    @NotBlank(message = "Brugernavn er påkrævet")
     private String username;
+    
+    @NotBlank(message = "Fornavn er påkrævet")
     private String firstName;
+    
+    @NotBlank(message = "Efternavn er påkrævet")
     private String lastName;
+    
+    @NotBlank(message = "Password er påkrævet")
     private String password;
+    
+    @NotBlank(message = "Bekræft password er påkrævet")
     private String confirmPassword;
+    
+    @NotNull(message = "Rolle er påkrævet")
     private UserRole role;
 
     public RegisterRequest() {}

@@ -105,3 +105,8 @@ const CitizenDetails: React.FC<CitizenDetailsProps> = ({
 
 export default CitizenDetails;
 
+
+
+
+
+

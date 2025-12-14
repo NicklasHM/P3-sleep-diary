@@ -8,6 +8,7 @@ import com.questionnaire.exception.ValidationException;
 import com.questionnaire.model.User;
 import com.questionnaire.security.JwtTokenProvider;
 import com.questionnaire.service.interfaces.IUserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     @Autowired
@@ -31,7 +32,7 @@ public class AuthController {
     private JwtTokenProvider tokenProvider;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         User user = userService.findByUsername(request.getUsername())
                 .orElseThrow(() -> new InvalidCredentialsException("Forkert brugernavn eller password"));
 
@@ -54,9 +55,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        // Valider at passwords matcher
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        // Valider at passwords matcher (null-safe sammenligning)
+        if (!Objects.equals(request.getPassword(), request.getConfirmPassword())) {
             throw new ValidationException("Passwords matcher ikke");
         }
 

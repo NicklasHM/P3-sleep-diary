@@ -44,7 +44,6 @@ The platform consists of two main questionnaires:
 - Spring Data MongoDB
 - Spring Security (JWT authentication)
 - MongoDB
-- Lombok (reduces boilerplate code)
 - Dotenv (environment variable handling)
 
 ### Frontend
@@ -166,7 +165,6 @@ See [backend/README.md](backend/README.md) for detailed API endpoint documentati
 ### Backend Tests
 - `mvn test` - Run all tests
 - `mvn test -Dtest=*IntegrationTest` - Run all integration tests
-- `mvn test -Dtest=QuestionnaireSystemTest` - Run system test
 - `mvn test -Dtest=*UnitTest` - Run all unit tests
 
 ### Frontend Linting

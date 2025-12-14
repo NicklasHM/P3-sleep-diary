@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/questionnaires")
-@CrossOrigin(origins = "*")
 public class QuestionnaireController {
 
     @Autowired
@@ -20,24 +19,38 @@ public class QuestionnaireController {
 
     @GetMapping("/{type}")
     public ResponseEntity<Questionnaire> getQuestionnaire(@PathVariable String type) {
-        QuestionnaireType questionnaireType = QuestionnaireType.valueOf(type);
-        Questionnaire questionnaire = questionnaireService.getQuestionnaireByType(questionnaireType);
-        return ResponseEntity.ok(questionnaire);
+        if (type == null || type.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            QuestionnaireType questionnaireType = QuestionnaireType.valueOf(type.toLowerCase());
+            Questionnaire questionnaire = questionnaireService.getQuestionnaireByType(questionnaireType);
+            return ResponseEntity.ok(questionnaire);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/{type}/start")
     public ResponseEntity<List<Question>> startQuestionnaire(
             @PathVariable String type,
             @RequestParam(required = false, defaultValue = "da") String language) {
-        QuestionnaireType questionnaireType = QuestionnaireType.valueOf(type);
-        Questionnaire questionnaire = questionnaireService.getQuestionnaireByType(questionnaireType);
-        List<Question> questions = questionnaireService.getQuestionsByQuestionnaireId(questionnaire.getId(), language);
-        
-        // Returner kun første spørgsmål
-        if (!questions.isEmpty()) {
-            return ResponseEntity.ok(List.of(questions.get(0)));
+        if (type == null || type.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(List.of());
+        try {
+            QuestionnaireType questionnaireType = QuestionnaireType.valueOf(type.toLowerCase());
+            Questionnaire questionnaire = questionnaireService.getQuestionnaireByType(questionnaireType);
+            List<Question> questions = questionnaireService.getQuestionsByQuestionnaireId(questionnaire.getId(), language);
+            
+            // Returner kun første spørgsmål
+            if (!questions.isEmpty()) {
+                return ResponseEntity.ok(List.of(questions.get(0)));
+            }
+            return ResponseEntity.ok(List.of());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
 

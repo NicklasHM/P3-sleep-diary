@@ -5,6 +5,7 @@ import com.questionnaire.service.interfaces.IQuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,42 +13,30 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/questions")
-@CrossOrigin(origins = "*")
 public class QuestionController {
 
     @Autowired
     private IQuestionService questionService;
 
     @PostMapping
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Question> createQuestion(@RequestBody Question question) {
         Question created = questionService.createQuestion(question);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Question> updateQuestion(@PathVariable String id, @RequestBody Question question) {
-        try {
-            Question updated = questionService.updateQuestion(id, question);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("låst")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            throw e;
-        }
+        Question updated = questionService.updateQuestion(id, question);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Void> deleteQuestion(@PathVariable String id) {
-        try {
-            questionService.deleteQuestion(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("låst")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            throw e;
-        }
+        questionService.deleteQuestion(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -86,55 +75,55 @@ public class QuestionController {
     }
 
     @PostMapping("/{id}/conditional")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Question> addConditionalChild(
             @PathVariable String id,
             @RequestBody Map<String, String> request) {
-        try {
-            String optionId = request.get("optionId");
-            String childQuestionId = request.get("childQuestionId");
-            Question updated = questionService.addConditionalChild(id, optionId, childQuestionId);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("låst")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            throw e;
+        if (request == null) {
+            return ResponseEntity.badRequest().build();
         }
+        String optionId = request.get("optionId");
+        String childQuestionId = request.get("childQuestionId");
+        if (optionId == null || childQuestionId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Question updated = questionService.addConditionalChild(id, optionId, childQuestionId);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}/conditional")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Question> removeConditionalChild(
             @PathVariable String id,
             @RequestBody Map<String, String> request) {
-        try {
-            String optionId = request.get("optionId");
-            String childQuestionId = request.get("childQuestionId");
-            Question updated = questionService.removeConditionalChild(id, optionId, childQuestionId);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("låst")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            throw e;
+        if (request == null) {
+            return ResponseEntity.badRequest().build();
         }
+        String optionId = request.get("optionId");
+        String childQuestionId = request.get("childQuestionId");
+        if (optionId == null || childQuestionId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Question updated = questionService.removeConditionalChild(id, optionId, childQuestionId);
+        return ResponseEntity.ok(updated);
     }
 
     @PutMapping("/{id}/conditional/order")
+    @PreAuthorize("hasRole('RÅDGIVER')")
     public ResponseEntity<Question> updateConditionalChildrenOrder(
             @PathVariable String id,
             @RequestBody Map<String, Object> request) {
-        try {
-            String optionId = (String) request.get("optionId");
-            @SuppressWarnings("unchecked")
-            List<String> childQuestionIds = (List<String>) request.get("childQuestionIds");
-            Question updated = questionService.updateConditionalChildrenOrder(id, optionId, childQuestionIds);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            if (e.getMessage().contains("låst")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-            throw e;
+        if (request == null) {
+            return ResponseEntity.badRequest().build();
         }
+        String optionId = (String) request.get("optionId");
+        @SuppressWarnings("unchecked")
+        List<String> childQuestionIds = (List<String>) request.get("childQuestionIds");
+        if (optionId == null || childQuestionIds == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        Question updated = questionService.updateConditionalChildrenOrder(id, optionId, childQuestionIds);
+        return ResponseEntity.ok(updated);
     }
 }
 

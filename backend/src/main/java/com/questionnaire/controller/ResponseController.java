@@ -7,6 +7,7 @@ import com.questionnaire.model.Response;
 import com.questionnaire.model.User;
 import com.questionnaire.service.interfaces.IResponseService;
 import com.questionnaire.service.interfaces.IUserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,7 +19,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/responses")
-@CrossOrigin(origins = "*")
 public class ResponseController {
 
     @Autowired
@@ -29,12 +29,22 @@ public class ResponseController {
 
     @PostMapping
     public ResponseEntity<Response> saveResponse(
-            @RequestBody ResponseRequest request,
+            @Valid @RequestBody ResponseRequest request,
             Authentication authentication) {
+        if (request == null || authentication == null) {
+            return ResponseEntity.badRequest().build();
+        }
         String username = authentication.getName();
+        if (username == null) {
+            return ResponseEntity.badRequest().build();
+        }
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Bruger ikke fundet"));
         String userId = user.getId();
+        
+        if (request.getQuestionnaireId() == null || request.getAnswers() == null) {
+            return ResponseEntity.badRequest().build();
+        }
         
         Response response = responseService.saveResponse(
                 userId,
@@ -49,7 +59,7 @@ public class ResponseController {
 
     @PostMapping("/next")
     public ResponseEntity<Question> getNextQuestion(
-            @RequestBody NextQuestionRequest request,
+            @Valid @RequestBody NextQuestionRequest request,
             @RequestParam(required = false, defaultValue = "da") String language) {
         Question nextQuestion = responseService.getNextQuestion(
                 request.getQuestionnaireId(),
@@ -69,14 +79,15 @@ public class ResponseController {
     public ResponseEntity<List<Response>> getResponses(
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String questionnaireId) {
-        List<Response> responses;
-        
-        if (userId != null && questionnaireId != null) {
-            responses = responseService.getResponsesByUserIdAndQuestionnaireId(userId, questionnaireId);
-        } else if (userId != null) {
-            responses = responseService.getResponsesByUserId(userId);
-        } else {
+        if (userId == null || userId.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
+        }
+        
+        List<Response> responses;
+        if (questionnaireId != null && !questionnaireId.trim().isEmpty()) {
+            responses = responseService.getResponsesByUserIdAndQuestionnaireId(userId, questionnaireId);
+        } else {
+            responses = responseService.getResponsesByUserId(userId);
         }
         
         return ResponseEntity.ok(responses);
@@ -86,11 +97,26 @@ public class ResponseController {
     public ResponseEntity<Map<String, Boolean>> checkResponseForToday(
             @RequestParam String questionnaireType,
             Authentication authentication) {
+        if (questionnaireType == null || questionnaireType.trim().isEmpty() || authentication == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         String username = authentication.getName();
+        if (username == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Bruger ikke fundet"));
         
-        com.questionnaire.model.QuestionnaireType type = com.questionnaire.model.QuestionnaireType.valueOf(questionnaireType.toLowerCase());
+        com.questionnaire.model.QuestionnaireType type;
+        try {
+            type = com.questionnaire.model.QuestionnaireType.valueOf(questionnaireType.toLowerCase());
+        } catch (IllegalArgumentException e) {
+            Map<String, Boolean> errorResult = new HashMap<>();
+            errorResult.put("error", true);
+            return ResponseEntity.badRequest().body(errorResult);
+        }
         boolean hasResponse = responseService.hasResponseForToday(user.getId(), type);
         
         Map<String, Boolean> result = new HashMap<>();

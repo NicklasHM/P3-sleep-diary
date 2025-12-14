@@ -1,9 +1,14 @@
 package com.questionnaire.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 
 public class ResponseRequest {
+    @NotBlank(message = "Questionnaire ID er påkrævet")
     private String questionnaireId;
+    
+    @NotNull(message = "Svar er påkrævet")
     private Map<String, Object> answers;
 
     public ResponseRequest() {}

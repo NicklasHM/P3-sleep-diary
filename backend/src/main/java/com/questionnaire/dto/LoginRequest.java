@@ -1,7 +1,12 @@
 package com.questionnaire.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginRequest {
+    @NotBlank(message = "Brugernavn er påkrævet")
     private String username;
+    
+    @NotBlank(message = "Password er påkrævet")
     private String password;
 
     public LoginRequest() {}

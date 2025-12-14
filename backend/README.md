@@ -10,7 +10,7 @@ Backend implementation in Java 17 with Spring Boot 3.2.0 and MongoDB.
 
 ## Setup
 
-1. Create a `.env` file in the `backend/` directory with the following keys (placér filen i `backend/`, UTF-8 uden BOM):
+1. Create a `.env` file in the `backend/` directory with the following keys (place the file in `backend/`, UTF-8 without BOM):
 
 ```env
 MONGODB_URI=your-mongodb-uri
@@ -36,7 +36,7 @@ mvn spring-boot:run
 
 The backend runs on `http://localhost:8080`
 
-**Dotenv indlæsning:** `MongoConfig` forsøger først environment variabler, derefter `.env` i `backend/`. Filen skal ligge i samme mappe som `pom.xml` og må ikke indeholde BOM.
+**Dotenv loading:** `MongoConfig` first tries environment variables, then `.env` in `backend/`. The file must be in the same directory as `pom.xml` and must not contain BOM.
 
 ## API Endpoints
 
@@ -116,116 +116,115 @@ The backend runs on `http://localhost:8080`
 
 ## Database Seeding
 
-Ved opstart seedes morgen spørgeskemaet automatisk med 9 låste spørgsmål via `DatabaseSeeder`. Disse spørgsmål er låste (`isLocked = true`) og kan ikke redigeres eller slettes.
+On startup, the morning questionnaire is automatically seeded with 9 locked questions via `DatabaseSeeder`. These questions are locked (`isLocked = true`) and cannot be edited or deleted.
 
 ## Security
 
 - JWT token authentication
-- Password hashing med BCrypt
-- CORS konfigureret via `CORS_ALLOWED_ORIGINS` miljøvariabel
+- Password hashing with BCrypt
+- CORS configured via `CORS_ALLOWED_ORIGINS` environment variable
 - Role-based access control (BORGER/RÅDGIVER)
-- Låste spørgsmål kan ikke modificeres (403 Forbidden)
-- Rate limiting: 60 requests per minut (undtaget auth endpoints)
-- Global exception handling med struktureret fejlhåndtering
+- Locked questions cannot be modified (403 Forbidden)
+- Rate limiting: 60 requests per minute (except auth endpoints)
+- Global exception handling with structured error handling
 
-## Projekt Struktur
+## Project Structure
 
 ```
 backend/
 ├── src/main/java/com/questionnaire/
-│   ├── config/          # Konfiguration (MongoDB, JWT, Rate Limiting, Seeder)
-│   ├── constants/       # Konstanter
+│   ├── config/          # Configuration (MongoDB, JWT, Rate Limiting, Seeder)
+│   ├── constants/       # Constants
 │   ├── controller/      # REST controllers
 │   ├── dto/             # Data Transfer Objects
-│   ├── exception/       # Exception håndtering
+│   ├── exception/       # Exception handling
 │   ├── factory/         # Factory pattern (QuestionFactory, ValidatorFactory)
-│   ├── model/           # Domain entities (BaseEntity, Question, Response, User, osv.)
+│   ├── model/           # Domain entities (BaseEntity, Question, Response, User, etc.)
 │   ├── repository/      # MongoDB repositories
-│   ├── security/        # JWT og Spring Security
-│   ├── service/         # Business logic (interfaces og implementeringer)
+│   ├── security/        # JWT and Spring Security
+│   ├── service/         # Business logic (interfaces and implementations)
 │   ├── strategy/        # Strategy pattern (ConditionalLogicStrategy)
-│   ├── utils/           # Utility klasser (AnswerParser, QuestionOrderUtil)
-│   └── validation/      # Validering (Template Method pattern, AnswerValidators)
-├── src/test/java/       # Test klasser (unit, integration, system)
+│   ├── utils/           # Utility classes (AnswerParser, QuestionOrderUtil)
+│   └── validation/      # Validation (Template Method pattern, AnswerValidators)
+├── src/test/java/       # Test classes (unit, integration)
 └── pom.xml
 ```
 
-## Miljøvariabler
+## Environment Variables
 
-Applikationen bruger miljøvariabler eller en `.env` fil til konfiguration:
+The application uses environment variables or a `.env` file for configuration:
 
-- `MONGODB_URI` - MongoDB connection string (påkrævet)
-- `JWT_SECRET` - Hemmelig nøgle til JWT tokens, minimum 32 tegn (påkrævet)
-- `JWT_EXPIRATION` - Token udløbstid i millisekunder (valgfri, standard: 86400000 = 24 timer)
-- `CORS_ALLOWED_ORIGINS` - Kommasepareret liste over tilladte origins (valgfri, standard: localhost)
+- `MONGODB_URI` - MongoDB connection string (required)
+- `JWT_SECRET` - Secret key for JWT tokens, minimum 32 characters (required)
+- `JWT_EXPIRATION` - Token expiration time in milliseconds (optional, default: 86400000 = 24 hours)
+- `CORS_ALLOWED_ORIGINS` - Comma-separated list of allowed origins (optional, default: localhost)
 
-**Bemærk:** `.env` filen skal ligge i `backend/` mappen og være i UTF-8 format uden BOM.
+**Note:** The `.env` file must be in the `backend/` directory and be in UTF-8 format without BOM.
 
-## Bygning til Production
+## Building for Production
 
 ```bash
 mvn clean package -DskipTests
 ```
 
-Dette opretter en JAR fil i `target/questionnaire-platform-1.0.0.jar` som kan køres med:
+This creates a JAR file at `target/questionnaire-platform-1.0.0.jar` which can be run with:
 
 ```bash
 java -jar target/questionnaire-platform-1.0.0.jar
 ```
 
-Eksempel på kørsel med miljøvariabler (erstatt værdier med egne):
+Example of running with environment variables (replace values with your own):
 ```bash
-MONGODB_URI=<din-uri> JWT_SECRET=<din-hemmelige-nøgle> \
+MONGODB_URI=<your-uri> JWT_SECRET=<your-secret-key> \
 JWT_EXPIRATION=86400000 CORS_ALLOWED_ORIGINS=http://localhost:3000 \
 java -jar target/questionnaire-platform-1.0.0.jar
 ```
 
 ## Design Patterns
 
-Backend implementerer flere OOP design patterns:
+The backend implements several OOP design patterns:
 
 ### Factory Pattern
-- **ValidatorFactory** - Opretter AnswerValidator baseret på spørgsmålstype
-- **QuestionFactory** - Opretter Question objekter med korrekt konfiguration
+- **ValidatorFactory** - Creates AnswerValidator based on question type
+- **QuestionFactory** - Creates Question objects with correct configuration
 
 ### Strategy Pattern
-- **ConditionalLogicStrategy** - Interface for betinget logik
-- **DefaultConditionalLogic** - Standard implementering af betinget logik
+- **ConditionalLogicStrategy** - Interface for conditional logic
+- **DefaultConditionalLogic** - Standard implementation of conditional logic
 
 ### Template Method Pattern
-- **QuestionnaireValidator** (abstract) - Definerer algoritme struktur
-- **UnifiedQuestionnaireValidator** - Konkret implementering med specifikke steps
+- **QuestionnaireValidator** (abstract) - Defines algorithm structure
+- **UnifiedQuestionnaireValidator** - Concrete implementation with specific steps
 
 ### Builder Pattern
-- **QuestionBuilder** - Bygger komplekse Question objekter
-- **QuestionOptionBuilder** - Bygger QuestionOption objekter
+- **QuestionBuilder** - Builds complex Question objects
+- **QuestionOptionBuilder** - Builds QuestionOption objects
 
 ### Inheritance
-- **BaseEntity** - Base klasse for alle entities med fælles felter (id, createdAt, updatedAt)
-- **Validatable** - Interface for validering
+- **BaseEntity** - Base class for all entities with common fields (id, createdAt, updatedAt)
 
 ## Features
 
 ### Soft Delete
-Spørgsmål kan soft-deletes (markeres som slettet via `deletedAt` felt) i stedet for at blive fjernet fra databasen. Dette gør det muligt at gendanne spørgsmål.
+Questions can be soft-deleted (marked as deleted via `deletedAt` field) instead of being removed from the database. This makes it possible to restore questions.
 
 ### Multi-language Support
-Spørgsmål understøtter både dansk (`textDa`) og engelsk (`textEn`). API endpoints accepterer `language` query parameter.
+Questions support both Danish (`textDa`) and English (`textEn`). API endpoints accept `language` query parameter.
 
 ### Color Coding
-Spørgsmål kan have farvekodning konfigureret via `colorCodeGreenMin/Max`, `colorCodeYellowMin/Max`, og `colorCodeRedMin/Max` felter. Dette bruges til visualisering i frontend.
+Questions can have color coding configured via `colorCodeGreenMin/Max`, `colorCodeYellowMin/Max`, and `colorCodeRedMin/Max` fields. This is used for visualization in the frontend.
 
 ### Validation Rules
-Spørgsmål kan have valideringsregler:
-- `minValue` / `maxValue` - For numeric og slider
+Questions can have validation rules:
+- `minValue` / `maxValue` - For numeric and slider
 - `minLength` / `maxLength` - For text
 - `minTime` / `maxTime` - For time_picker
 
 ### Sleep Parameter Calculation
-Søvnparametre beregnes automatisk fra morgenresponser:
-- **SOL** (Sleep Onset Latency) - Tid fra sengetid til indsovning
-- **WASO** (Wake After Sleep Onset) - Total tid vågen efter indsovning
-- **TIB** (Time in Bed) - Tid i seng fra sengetid til opstigning
-- **TST** (Total Sleep Time) - Beregnet som TIB - SOL - WASO
+Sleep parameters are automatically calculated from morning responses:
+- **SOL** (Sleep Onset Latency) - Time from bedtime to falling asleep
+- **WASO** (Wake After Sleep Onset) - Total time awake after sleep onset
+- **TIB** (Time in Bed) - Time in bed from bedtime to getting up
+- **TST** (Total Sleep Time) - Calculated as TIB - SOL - WASO
 
-Parametrene beregnes on-the-fly når de anmodes via `/api/users/{id}/sleep-data` endpoint.
+Parameters are calculated on-the-fly when requested via the `/api/users/{id}/sleep-data` endpoint.

@@ -2,17 +2,32 @@ package com.questionnaire.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @Autowired
+    private Environment environment;
+
+    private boolean isProduction() {
+        String[] activeProfiles = environment.getActiveProfiles();
+        return Arrays.asList(activeProfiles).contains("prod") || 
+               Arrays.asList(activeProfiles).contains("production") ||
+               (activeProfiles.length == 0 && !Arrays.asList(environment.getDefaultProfiles()).contains("dev"));
+    }
 
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException e) {
@@ -49,6 +64,16 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", e.getMessage()));
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        logger.warn("Validation error: {}", errorMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", errorMessage.isEmpty() ? "Valideringsfejl" : errorMessage));
+    }
+
     @ExceptionHandler(QuestionLockedException.class)
     public ResponseEntity<Map<String, String>> handleQuestionLocked(QuestionLockedException e) {
         logger.warn("Question locked: {}", e.getMessage());
@@ -80,8 +105,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception e) {
         logger.error("Unexpected exception: {}", e.getMessage(), e);
+        
+        String errorMessage;
+        if (isProduction()) {
+            // Returner generisk fejlbesked i production for at undgå information leakage
+            errorMessage = "Der opstod en intern server fejl. Kontakt support hvis problemet fortsætter.";
+        } else {
+            // I development, vis detaljeret fejlbesked
+            errorMessage = "Intern server fejl: " + e.getMessage();
+        }
+        
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Intern server fejl: " + e.getMessage()));
+                .body(Map.of("error", errorMessage));
     }
 }
 
