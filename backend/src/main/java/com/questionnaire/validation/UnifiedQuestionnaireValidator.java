@@ -35,8 +35,8 @@ public class UnifiedQuestionnaireValidator extends QuestionnaireValidator {
     
     @Override
     protected void validateSpecificRules(List<Question> questions, Map<String, Object> answers, String questionnaireId) {
-        // Auto-fill logik: Hvis spørgsmål 6 er "Nej", sæt spørgsmål 8 (order 602) automatisk til 0 hvis det mangler
-        autoFillQuestion8(questions, answers);
+        // Auto-fill logik: Hvis spørgsmål 6 er "Nej", sæt spørgsmål 602 automatisk til 0 hvis det mangler
+        autoFillQuestion602(questions, answers);
         
         // Valider at spørgsmål 4 ikke er før spørgsmål 3
         validateLightOffTime(questions, answers);
@@ -54,18 +54,18 @@ public class UnifiedQuestionnaireValidator extends QuestionnaireValidator {
     /**
      * Auto-fill logik: Hvis spørgsmål 6 er "Nej", sæt spørgsmål 602 automatisk til 0 hvis det mangler
      */
-    private void autoFillQuestion8(List<Question> questions, Map<String, Object> answers) {
+    private void autoFillQuestion602(List<Question> questions, Map<String, Object> answers) {
         Question question6 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_6, QuestionType.multiple_choice);
-        Question question8 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_602, QuestionType.numeric);
+        Question question602 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_602, QuestionType.numeric);
         
-        if (question6 != null && question8 != null) {
+        if (question6 != null && question602 != null) {
             Object answer6 = answers.get(question6.getId());
             if (answer6 != null) {
                 String optionId = AnswerParser.extractOptionId(answer6);
                 
                 // Hvis spørgsmål 6 er "Nej" og spørgsmål 602 mangler, sæt det til 0
-                if ("wake_no".equals(optionId) && !answers.containsKey(question8.getId())) {
-                    answers.put(question8.getId(), 0);
+                if ("wake_no".equals(optionId) && !answers.containsKey(question602.getId())) {
+                    answers.put(question602.getId(), 0);
                 }
             }
         }
@@ -129,10 +129,10 @@ public class UnifiedQuestionnaireValidator extends QuestionnaireValidator {
      */
     private void validateQuestion6(List<Question> questions, Map<String, Object> answers) {
         Question question6 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_6, QuestionType.multiple_choice);
-        Question question7 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_601, QuestionType.numeric);
-        Question question8 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_602, QuestionType.numeric);
+        Question question601 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_601, QuestionType.numeric);
+        Question question602 = questionFinder.findByOrderAndType(questions, QuestionnaireConstants.ORDER_602, QuestionType.numeric);
         
-        if (question6 != null && question7 != null && question8 != null) {
+        if (question6 != null && question601 != null && question602 != null) {
             Object answer6 = answers.get(question6.getId());
             
             if (answer6 != null) {
@@ -140,31 +140,31 @@ public class UnifiedQuestionnaireValidator extends QuestionnaireValidator {
                 
                 if ("wake_yes".equals(optionId)) {
                     // Hvis spørgsmål 6 er "Ja", skal både spørgsmål 601 og 602 være besvaret
-                    Object answer7 = answers.get(question7.getId());
-                    Object answer8 = answers.get(question8.getId());
+                    Object answer601 = answers.get(question601.getId());
+                    Object answer602 = answers.get(question602.getId());
                     
-                    if (answer7 == null || answer8 == null) {
+                    if (answer601 == null || answer602 == null) {
                         throw new ValidationException(
                             "Hvis du vågnede i løbet af natten, skal du angive både hvor mange gange og hvor mange minutter du var vågen. / If you woke up during the night, you must specify both how many times and how many minutes you were awake."
                         );
                     }
                     
                     try {
-                        int value7 = AnswerParser.parseInt(answer7);
-                        int value8 = AnswerParser.parseInt(answer8);
+                        int value601 = AnswerParser.parseInt(answer601);
+                        int value602 = AnswerParser.parseInt(answer602);
                         
                         // Valider at spørgsmål 601 ikke kan være 0 hvis man har svaret Ja til spørgsmål 6
-                        if (value7 == 0) {
+                        if (value601 == 0) {
                             throw new ValidationException(
                                 "Hvis du vågnede i løbet af natten, skal du angive hvor mange gange du vågnede. Værdien kan ikke være 0. / If you woke up during the night, you must specify how many times you woke up. The value cannot be 0."
                             );
                         }
                         
                         // Valider at spørgsmål 602 ikke kan være 0 hvis man har vågnet mindst 1 gang
-                        if (value7 >= 1 && value8 == 0) {
+                        if (value601 >= 1 && value602 == 0) {
                             throw new ValidationException(
                                 String.format("Hvis du vågnede %d gange i løbet af natten, skal du også angive hvor længe du var vågen. Værdien kan ikke være 0. / If you woke up %d times during the night, you must also specify how long you were awake. The value cannot be 0.",
-                                    value7, value7)
+                                    value601, value601)
                             );
                         }
                     } catch (NumberFormatException e) {
@@ -172,14 +172,14 @@ public class UnifiedQuestionnaireValidator extends QuestionnaireValidator {
                     }
                 } else if ("wake_no".equals(optionId)) {
                     // Hvis spørgsmål 6 er "Nej", skal spørgsmål 602 være 0
-                    Object answer8 = answers.get(question8.getId());
-                    if (answer8 != null) {
+                    Object answer602 = answers.get(question602.getId());
+                    if (answer602 != null) {
                         try {
-                            int value8 = AnswerParser.parseInt(answer8);
-                            if (value8 != 0) {
+                            int value602 = AnswerParser.parseInt(answer602);
+                            if (value602 != 0) {
                                 throw new ValidationException(
                                     String.format("Hvis du ikke vågnede i løbet af natten, kan du ikke have været vågen i flere minutter. Værdien skal være 0. Du indtastede: %d / If you did not wake up during the night, you cannot have been awake for several minutes. The value must be 0. You entered: %d",
-                                        value8, value8)
+                                        value602, value602)
                                 );
                             }
                         } catch (NumberFormatException e) {

@@ -286,6 +286,24 @@ export const useQuestionnaireWizard = (t: TFunction, languageProp?: string): Use
             }
           }
         }
+        
+        // Ryd conditional svar når parent spørgsmål ændres
+        if (currentQuestion.conditionalChildren && currentQuestion.conditionalChildren.length > 0) {
+          const previousAnswer = prev[currentQuestion.id];
+          const previousMatchingConditionals = getConditionalQuestionsForAnswer(currentQuestion, previousAnswer);
+          const currentMatchingConditionals = getConditionalQuestionsForAnswer(currentQuestion, value);
+          
+          // Find conditional questions der ikke længere er relevante
+          const conditionalIdsToRemove = previousMatchingConditionals
+            .filter(prevCc => !currentMatchingConditionals.some(currCc => currCc.childQuestionId === prevCc.childQuestionId))
+            .map(cc => cc.childQuestionId);
+          
+          // Ryd svar for conditional questions der ikke længere er relevante
+          conditionalIdsToRemove.forEach(childId => {
+            delete newAnswers[childId];
+          });
+        }
+        
         resolve(newAnswers);
         return newAnswers;
       });
